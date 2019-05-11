@@ -101,6 +101,7 @@ def target_file(
     except Exception:
         print("[!] Unable to load: %s" % targets)
 
+    pool = multiprocessing.Pool()
     for ip_address in target_file:
         ip_address = ip_address.strip()
         create_dir_structure(ip_address, output_directory)
@@ -109,6 +110,7 @@ def target_file(
         nmap_directory = host_directory + "/scans"
 
         jobs = []
+        pool.apply_async(nmap_scan,(ip_address,nmap_directory,dns_server,quick,no_udp_service_scan))
         p = multiprocessing.Process(
             target=nmap_scan,
             args=(
@@ -118,7 +120,10 @@ def target_file(
                 quick,
                 no_udp_service_scan))
         jobs.append(p)
-        p.start()
+#        p.start()
+
+    pool.close()
+    pool.join()
     target_file.close()
 
 
